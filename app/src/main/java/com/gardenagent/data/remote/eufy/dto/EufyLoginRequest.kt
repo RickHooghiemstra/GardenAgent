@@ -7,6 +7,6 @@ import kotlinx.serialization.Serializable
 data class EufyLoginRequest(
     val email: String,
     val password: String,
-    val country: String = "NL",
-    val timezone: String = "Europe/Amsterdam",
+    val country: String = java.util.Locale.getDefault().country.takeIf { it.isNotEmpty() } ?: "US",
+    val timezone: String = java.util.TimeZone.getDefault().id,
 )

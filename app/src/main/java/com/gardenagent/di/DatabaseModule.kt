@@ -22,11 +22,10 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): GardenDatabase =
         Room.databaseBuilder(context, GardenDatabase::class.java, "garden_agent.db")
-            .fallbackToDestructiveMigration()
             .build()
 
-    @Provides fun providePlantDao(db: GardenDatabase): PlantDao = db.plantDao()
-    @Provides fun provideJournalEntryDao(db: GardenDatabase): JournalEntryDao = db.journalEntryDao()
-    @Provides fun provideSensorReadingDao(db: GardenDatabase): SensorReadingDao = db.sensorReadingDao()
-    @Provides fun provideWeatherReadingDao(db: GardenDatabase): WeatherReadingDao = db.weatherReadingDao()
+    @Provides @Singleton fun providePlantDao(db: GardenDatabase): PlantDao = db.plantDao()
+    @Provides @Singleton fun provideJournalEntryDao(db: GardenDatabase): JournalEntryDao = db.journalEntryDao()
+    @Provides @Singleton fun provideSensorReadingDao(db: GardenDatabase): SensorReadingDao = db.sensorReadingDao()
+    @Provides @Singleton fun provideWeatherReadingDao(db: GardenDatabase): WeatherReadingDao = db.weatherReadingDao()
 }

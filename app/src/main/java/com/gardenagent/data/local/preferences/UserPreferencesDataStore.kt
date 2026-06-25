@@ -42,11 +42,13 @@ class UserPreferencesDataStore @Inject constructor(
     }
 
     suspend fun getOrCreateOpenUdid(): String {
-        val existing = context.dataStore.data.first()[openUdidKey]
-        if (existing != null) return existing
-        val newId = UUID.randomUUID().toString().replace("-", "")
-        context.dataStore.edit { it[openUdidKey] = newId }
-        return newId
+        val prefs = context.dataStore.updateData { current ->
+            if (current[openUdidKey] != null) current
+            else current.toMutablePreferences().apply {
+                this[openUdidKey] = UUID.randomUUID().toString().replace("-", "")
+            }
+        }
+        return prefs[openUdidKey]!!
     }
 
     suspend fun getEufyToken(): String? = context.dataStore.data.first()[eufyTokenKey]

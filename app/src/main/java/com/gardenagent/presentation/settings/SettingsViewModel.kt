@@ -22,8 +22,14 @@ class SettingsViewModel @Inject constructor(
     private val eufyRepository: EufyRepository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(SettingsUiState(isLoggedIn = eufyRepository.isLoggedIn()))
+    private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState
+
+    init {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoggedIn = eufyRepository.isLoggedIn())
+        }
+    }
 
     fun onEmailChange(email: String) { _uiState.value = _uiState.value.copy(email = email) }
     fun onPasswordChange(pw: String) { _uiState.value = _uiState.value.copy(password = pw) }
@@ -37,7 +43,7 @@ class SettingsViewModel @Inject constructor(
         _uiState.value = state.copy(isLoading = true, error = null)
         viewModelScope.launch {
             eufyRepository.login(state.email.trim(), state.password)
-                .onSuccess { _uiState.value = _uiState.value.copy(isLoading = false, isLoggedIn = true) }
+                .onSuccess { _uiState.value = _uiState.value.copy(isLoading = false, isLoggedIn = true, password = "") }
                 .onFailure { _uiState.value = _uiState.value.copy(isLoading = false, error = it.message) }
         }
     }

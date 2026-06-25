@@ -10,9 +10,13 @@ import javax.inject.Inject
 class EufyAuthInterceptor @Inject constructor(
     private val dataStore: UserPreferencesDataStore,
 ) : Interceptor {
+
+    // UDID is stable once generated; cache it to avoid repeated DataStore reads on the OkHttp thread.
+    @Volatile private var cachedUdid: String? = null
+
     override fun intercept(chain: Interceptor.Chain): Response {
         val token = runBlocking { dataStore.getEufyToken() }
-        val udid = runBlocking { dataStore.getOrCreateOpenUdid() }
+        val udid = cachedUdid ?: runBlocking { dataStore.getOrCreateOpenUdid() }.also { cachedUdid = it }
         val request = chain.request().newBuilder()
             .apply {
                 if (token != null) addHeader("Authorization", "Bearer $token")

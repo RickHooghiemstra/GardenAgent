@@ -11,7 +11,9 @@ import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
+import android.os.Build
 import android.os.ParcelUuid
+import androidx.annotation.RequiresApi
 import com.gardenagent.domain.model.SensorReading
 import com.gardenagent.domain.provider.SensorScanResult
 import com.gardenagent.domain.provider.SoilSensorProvider
@@ -41,8 +43,6 @@ class MiFloraManager @Inject constructor(
         (context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
     }
 
-    private var scanCallback: ScanCallback? = null
-
     override fun scan(): Flow<SensorScanResult> = callbackFlow {
         val scanner = bluetoothAdapter?.bluetoothLeScanner
             ?: run { close(IllegalStateException("Bluetooth not available")); return@callbackFlow }
@@ -54,7 +54,8 @@ class MiFloraManager @Inject constructor(
             .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
             .build()
 
-        scanCallback = object : ScanCallback() {
+        // Callback is local to this flow instance — no shared mutable state on the singleton.
+        val callback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 trySend(SensorScanResult(
                     address = result.device.address,
@@ -64,32 +65,23 @@ class MiFloraManager @Inject constructor(
             }
         }
 
-        scanner.startScan(listOf(filter), settings, scanCallback!!)
-        awaitClose {
-            scanner.stopScan(scanCallback!!)
-            scanCallback = null
-        }
+        scanner.startScan(listOf(filter), settings, callback)
+        awaitClose { scanner.stopScan(callback) }
     }
 
-    override fun stopScan() {
-        scanCallback?.let {
-            bluetoothAdapter?.bluetoothLeScanner?.stopScan(it)
-            scanCallback = null
-        }
-    }
+    // Cancelling the scan Flow calls awaitClose, which stops the scan. This override is a no-op.
+    override fun stopScan() = Unit
 
     override suspend fun readSensor(address: String, name: String?): Result<SensorReading> =
         withTimeout(15_000) {
             runCatching { readSensorInternal(address, name) }
         }
 
-    @Suppress("DEPRECATION")
     private suspend fun readSensorInternal(address: String, name: String?): SensorReading =
         suspendCancellableCoroutine { cont ->
             val device = bluetoothAdapter?.getRemoteDevice(address)
                 ?: run { cont.resumeWithException(IllegalStateException("Device not found: $address")); return@suspendCancellableCoroutine }
 
-            var gatt: BluetoothGatt? = null
             var sensorData: SensorRawData? = null
             var battery: Int? = null
 
@@ -107,8 +99,7 @@ class MiFloraManager @Inject constructor(
                     val service = g.getService(MI_FLORA_SERVICE)
                         ?: run { cont.resumeWithException(IllegalStateException("Mi Flora service not found")); return }
                     val modeChar = service.getCharacteristic(CHAR_MODE_SWITCH)
-                    modeChar.value = byteArrayOf(0xa0.toByte(), 0x1f)
-                    g.writeCharacteristic(modeChar)
+                    writeModeSwitchChar(g, modeChar)
                 }
 
                 override fun onCharacteristicWrite(g: BluetoothGatt, char: BluetoothGattCharacteristic, status: Int) {
@@ -119,16 +110,31 @@ class MiFloraManager @Inject constructor(
                     }
                 }
 
+                @Suppress("DEPRECATION")
                 override fun onCharacteristicRead(g: BluetoothGatt, char: BluetoothGattCharacteristic, status: Int) {
+                    handleCharRead(g, char, char.value ?: return)
+                }
+
+                @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+                override fun onCharacteristicRead(
+                    g: BluetoothGatt,
+                    char: BluetoothGattCharacteristic,
+                    value: ByteArray,
+                    status: Int,
+                ) {
+                    handleCharRead(g, char, value)
+                }
+
+                private fun handleCharRead(g: BluetoothGatt, char: BluetoothGattCharacteristic, value: ByteArray) {
                     when (char.uuid) {
                         CHAR_SENSOR_DATA -> {
-                            sensorData = MiFloraParser.parseSensorData(char.value)
+                            sensorData = MiFloraParser.parseSensorData(value)
                             val batteryChar = g.getService(MI_FLORA_SERVICE)?.getCharacteristic(CHAR_BATTERY)
                             if (batteryChar != null) g.readCharacteristic(batteryChar)
                             else finalize(g)
                         }
                         CHAR_BATTERY -> {
-                            battery = MiFloraParser.parseBattery(char.value)
+                            battery = MiFloraParser.parseBattery(value)
                             finalize(g)
                         }
                     }
@@ -153,7 +159,19 @@ class MiFloraManager @Inject constructor(
                 }
             }
 
-            gatt = device.connectGatt(context, false, callback)
-            cont.invokeOnCancellation { gatt?.close() }
+            // Capture gatt locally before invokeOnCancellation to avoid a cancellation race.
+            val gatt = device.connectGatt(context, false, callback)
+            cont.invokeOnCancellation { gatt.close() }
         }
+
+    @Suppress("DEPRECATION")
+    private fun writeModeSwitchChar(g: BluetoothGatt, char: BluetoothGattCharacteristic) {
+        val payload = byteArrayOf(0xa0.toByte(), 0x1f)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            g.writeCharacteristic(char, payload, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+        } else {
+            char.value = payload
+            g.writeCharacteristic(char)
+        }
+    }
 }

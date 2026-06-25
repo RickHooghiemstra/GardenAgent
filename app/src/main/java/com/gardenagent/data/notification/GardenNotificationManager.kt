@@ -7,6 +7,7 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.gardenagent.MainActivity
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -15,7 +16,7 @@ class GardenNotificationManager @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
     private val manager = context.getSystemService(NotificationManager::class.java)
-    private var notificationId = 1000
+    private val notificationId = AtomicInteger(1000)
 
     private fun mainPendingIntent(): PendingIntent {
         val intent = Intent(context, MainActivity::class.java)
@@ -31,7 +32,7 @@ class GardenNotificationManager @Inject constructor(
             .setContentIntent(mainPendingIntent())
             .setAutoCancel(true)
             .build()
-        manager.notify(notificationId++, notification)
+        manager.notify(notificationId.getAndIncrement(), notification)
     }
 
     fun showDoorbellRing(cameraName: String) {
@@ -43,7 +44,7 @@ class GardenNotificationManager @Inject constructor(
             .setContentIntent(mainPendingIntent())
             .setAutoCancel(true)
             .build()
-        manager.notify(notificationId++, notification)
+        manager.notify(notificationId.getAndIncrement(), notification)
     }
 
     fun showCareReminder(title: String, message: String) {
@@ -56,6 +57,6 @@ class GardenNotificationManager @Inject constructor(
             .setContentIntent(mainPendingIntent())
             .setAutoCancel(true)
             .build()
-        manager.notify(notificationId++, notification)
+        manager.notify(notificationId.getAndIncrement(), notification)
     }
 }

@@ -70,6 +70,11 @@ android {
     }
 }
 
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.incremental", "true")
+}
+
 dependencies {
     // Compose BOM
     val composeBom = platform(libs.compose.bom)

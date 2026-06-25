@@ -34,7 +34,7 @@ class GardenAdviceRepositoryImpl @Inject constructor(
             apiKey = apiKey,
             request = ClaudeRequest(
                 system = SYSTEM_PROMPT,
-                messages = listOf(ClaudeMessage(role = "user", content = prompt)),
+                messages = listOf(ClaudeMessage(role = "user", content = prompt))
             )
         )
         val text = response.content.firstOrNull { it.type == "text" }?.text

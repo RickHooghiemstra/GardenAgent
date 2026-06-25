@@ -12,13 +12,13 @@ class GardenFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(message: RemoteMessage) {
         val type = message.data["type"]
-        val camera = message.data["camera"] ?: "Camera"
+        val camera = message.data["camera"]?.take(100) ?: "Camera"
         when (type) {
             "motion" -> notificationManager.showMotionDetected(camera)
             "doorbell" -> notificationManager.showDoorbellRing(camera)
             "reminder" -> {
-                val title = message.data["title"] ?: "Garden Reminder"
-                val body = message.notification?.body ?: message.data["body"] ?: ""
+                val title = message.data["title"]?.take(100) ?: "Garden Reminder"
+                val body = (message.notification?.body ?: message.data["body"] ?: "").take(500)
                 notificationManager.showCareReminder(title, body)
             }
         }

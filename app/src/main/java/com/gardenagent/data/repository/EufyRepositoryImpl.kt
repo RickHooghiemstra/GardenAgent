@@ -35,7 +35,5 @@ class EufyRepositoryImpl @Inject constructor(
 
     override suspend fun logout() { dataStore.clearEufyCredentials() }
 
-    override fun isLoggedIn(): Boolean = runCatching {
-        kotlinx.coroutines.runBlocking { dataStore.eufyToken.first() != null }
-    }.getOrDefault(false)
+    override suspend fun isLoggedIn(): Boolean = dataStore.eufyToken.first() != null
 }
