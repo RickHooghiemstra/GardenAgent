@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Garden Agent</string>
+    <string name="tab_dashboard">Dashboard</string>
+    <string name="tab_plants">Plants</string>
+    <string name="tab_journal">Journal</string>
+    <string name="tab_sensors">Sensors</string>
+    <string name="tab_cameras">Cameras</string>
+    <string name="notification_channel_motion">Motion Events</string>
+    <string name="notification_channel_doorbell">Doorbell</string>
+    <string name="notification_channel_reminders">Care Reminders</string>
+</resources>
