@@ -14,4 +14,5 @@ class SensorRepositoryImpl @Inject constructor(private val dao: SensorReadingDao
     override fun getLatestReadingForDevice(address: String): Flow<SensorReading?> = dao.getLatestReadingForDevice(address).map { it?.toDomain() }
     override suspend fun saveReading(reading: SensorReading) = dao.insertReading(reading.toEntity())
     override suspend fun deleteOldReadings(cutoffMs: Long) = dao.deleteOldReadings(cutoffMs)
+    override suspend fun getLatestReadings(): List<SensorReading> = dao.getLatestPerDevice().map { it.toDomain() }
 }

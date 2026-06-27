@@ -21,6 +21,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onNotificationSettings: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -84,6 +85,15 @@ fun SettingsScreen(
                     if (state.isLoading) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
                     else Text("Log in to Eufy")
                 }
+            }
+
+            HorizontalDivider(Modifier.padding(vertical = 8.dp))
+            Text("Notifications", style = MaterialTheme.typography.titleMedium)
+            OutlinedButton(
+                onClick = onNotificationSettings,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Notification Preferences")
             }
         }
     }

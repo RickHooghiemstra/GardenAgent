@@ -17,4 +17,7 @@ interface SensorReadingDao {
 
     @Query("DELETE FROM sensor_readings WHERE recordedAt < :cutoffMs")
     suspend fun deleteOldReadings(cutoffMs: Long)
+
+    @Query("SELECT * FROM sensor_readings WHERE id IN (SELECT MAX(id) FROM sensor_readings GROUP BY deviceAddress)")
+    suspend fun getLatestPerDevice(): List<SensorReadingEntity>
 }

@@ -68,8 +68,25 @@ private fun JournalEntryCard(entry: JournalEntry) {
                 )
             }
             Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(dateStr, style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(dateStr, style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (entry.isAiGenerated) {
+                        AssistChip(
+                            onClick = {},
+                            label = { Text("AI", style = MaterialTheme.typography.labelSmall) },
+                            modifier = Modifier.height(24.dp),
+                            colors = AssistChipDefaults.assistChipColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                labelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            ),
+                        )
+                    }
+                }
                 entry.notes?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
                 entry.weatherCondition?.let {
                     Text("Weather: $it${entry.temperatureCelsius?.let { t -> " · ${t.toInt()}°C" } ?: ""}",

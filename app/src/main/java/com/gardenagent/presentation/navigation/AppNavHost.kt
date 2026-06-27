@@ -21,9 +21,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.gardenagent.presentation.camera.AddManualCameraScreen
 import com.gardenagent.presentation.camera.CameraListScreen
 import com.gardenagent.presentation.camera.CameraViewScreen
 import com.gardenagent.presentation.dashboard.DashboardScreen
+import com.gardenagent.presentation.gardens.CreateGardenScreen
+import com.gardenagent.presentation.gardens.GardenListScreen
 import com.gardenagent.presentation.identify.IdentifyPlantScreen
 import com.gardenagent.presentation.journal.AddJournalEntryScreen
 import com.gardenagent.presentation.journal.JournalScreen
@@ -31,6 +34,7 @@ import com.gardenagent.presentation.plants.AddPlantScreen
 import com.gardenagent.presentation.plants.PlantDetailScreen
 import com.gardenagent.presentation.plants.PlantListScreen
 import com.gardenagent.presentation.sensors.SensorScreen
+import com.gardenagent.presentation.settings.NotificationSettingsScreen
 import com.gardenagent.presentation.settings.SettingsScreen
 import com.gardenagent.presentation.weather.WeatherScreen
 
@@ -124,7 +128,10 @@ fun AppNavHost() {
                 AddPlantScreen(onBack = { navController.popBackStack() })
             }
             composable(Screen.IdentifyPlant.route) {
-                IdentifyPlantScreen(onBack = { navController.popBackStack() })
+                IdentifyPlantScreen(
+                    onBack = { navController.popBackStack() },
+                    onPlantAdded = { /* plant added, stay on screen */ },
+                )
             }
             composable(Screen.Journal.route) {
                 JournalScreen(
@@ -147,7 +154,8 @@ fun AppNavHost() {
             composable(Screen.CameraList.route) {
                 CameraListScreen(
                     onCameraClick = { sn -> navController.navigate(Screen.CameraView.createRoute(sn)) },
-                    onSettings = { navController.navigate(Screen.Settings.route) }
+                    onSettings = { navController.navigate(Screen.Settings.route) },
+                    onAddManualCamera = { navController.navigate(Screen.AddManualCamera.route) },
                 )
             }
             composable(Screen.CameraView.route) { backStackEntry ->
@@ -157,8 +165,26 @@ fun AppNavHost() {
                     onBack = { navController.popBackStack() }
                 )
             }
+            composable(Screen.AddManualCamera.route) {
+                AddManualCameraScreen(onBack = { navController.popBackStack() })
+            }
             composable(Screen.Settings.route) {
-                SettingsScreen(onBack = { navController.popBackStack() })
+                SettingsScreen(
+                    onBack = { navController.popBackStack() },
+                    onNotificationSettings = { navController.navigate(Screen.NotificationSettings.route) },
+                )
+            }
+            composable(Screen.GardenList.route) {
+                GardenListScreen(
+                    onBack = { navController.popBackStack() },
+                    onCreateGarden = { navController.navigate(Screen.CreateGarden.route) },
+                )
+            }
+            composable(Screen.CreateGarden.route) {
+                CreateGardenScreen(onBack = { navController.popBackStack() })
+            }
+            composable(Screen.NotificationSettings.route) {
+                NotificationSettingsScreen(onBack = { navController.popBackStack() })
             }
         }
     }

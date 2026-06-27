@@ -19,6 +19,10 @@ sealed class Screen(val route: String) {
     data object CameraView : Screen("cameras/{deviceSn}") {
         fun createRoute(sn: String) = "cameras/$sn"
     }
+    data object AddManualCamera : Screen("cameras/add")
     data object Advice : Screen("advice")
     data object Settings : Screen("settings")
+    data object GardenList : Screen("gardens")
+    data object CreateGarden : Screen("gardens/create")
+    data object NotificationSettings : Screen("settings/notifications")
 }

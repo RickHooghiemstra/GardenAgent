@@ -11,4 +11,10 @@ interface GardenAdviceRepository {
         sensorReadings: List<SensorReading>,
         plants: List<Plant>,
     ): Result<GardenAdvice>
+
+    suspend fun getDailyJournalEntry(
+        weather: WeatherData?,
+        sensorReadings: List<SensorReading>,
+        plants: List<Plant>,
+    ): Result<String>
 }

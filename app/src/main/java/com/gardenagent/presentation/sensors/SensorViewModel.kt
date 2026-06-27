@@ -2,8 +2,10 @@ package com.gardenagent.presentation.sensors
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gardenagent.domain.model.SensorDevice
 import com.gardenagent.domain.model.SensorReading
 import com.gardenagent.domain.provider.SensorScanResult
+import com.gardenagent.domain.repository.SensorDeviceRepository
 import com.gardenagent.domain.repository.SensorRepository
 import com.gardenagent.domain.usecase.sensor.ReadSensorDataUseCase
 import com.gardenagent.domain.usecase.sensor.ScanForSensorsUseCase
@@ -16,6 +18,7 @@ import javax.inject.Inject
 data class SensorUiState(
     val discoveredDevices: List<SensorScanResult> = emptyList(),
     val readings: Map<String, SensorReading> = emptyMap(),
+    val registeredDevices: Map<String, SensorDevice> = emptyMap(),
     val isScanning: Boolean = false,
     val readingAddress: String? = null,
     val error: String? = null,
@@ -26,6 +29,7 @@ class SensorViewModel @Inject constructor(
     private val scanForSensorsUseCase: ScanForSensorsUseCase,
     private val readSensorDataUseCase: ReadSensorDataUseCase,
     private val sensorRepository: SensorRepository,
+    private val sensorDeviceRepository: SensorDeviceRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SensorUiState())
@@ -38,6 +42,12 @@ class SensorViewModel @Inject constructor(
             sensorRepository.getRecentReadings(20).collect { readings ->
                 val map = readings.associateBy { it.deviceAddress }
                 _state.update { it.copy(readings = map) }
+            }
+        }
+        viewModelScope.launch {
+            sensorDeviceRepository.getDevices().collect { devices ->
+                val map = devices.associateBy { it.address }
+                _state.update { it.copy(registeredDevices = map) }
             }
         }
     }
@@ -78,6 +88,16 @@ class SensorViewModel @Inject constructor(
                 .onFailure { e ->
                     _state.update { it.copy(readingAddress = null, error = e.message) }
                 }
+        }
+    }
+
+    fun registerDevice(address: String, name: String, location: String) {
+        viewModelScope.launch {
+            sensorDeviceRepository.registerDevice(SensorDevice(
+                address = address,
+                deviceName = name,
+                locationDescription = location.trim().takeIf { it.isNotBlank() },
+            ))
         }
     }
 }

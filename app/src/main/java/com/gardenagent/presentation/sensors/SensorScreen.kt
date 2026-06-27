@@ -1,5 +1,7 @@
 package com.gardenagent.presentation.sensors
 
+import android.Manifest
+import android.os.Build
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,8 +18,6 @@ import com.gardenagent.domain.model.SensorReading
 import com.gardenagent.domain.provider.SensorScanResult
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import android.Manifest
-import android.os.Build
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -76,8 +76,13 @@ fun SensorScreen(viewModel: SensorViewModel = hiltViewModel()) {
                         SensorDeviceCard(
                             device = device,
                             reading = state.readings[device.address],
+                            registeredName = state.registeredDevices[device.address]?.deviceName,
+                            registeredLocation = state.registeredDevices[device.address]?.locationDescription,
                             isReading = state.readingAddress == device.address,
                             onRead = { viewModel.readDevice(device.address, device.name) },
+                            onRegister = { name, location ->
+                                viewModel.registerDevice(device.address, name, location)
+                            },
                         )
                     }
                 }
@@ -90,9 +95,49 @@ fun SensorScreen(viewModel: SensorViewModel = hiltViewModel()) {
 private fun SensorDeviceCard(
     device: SensorScanResult,
     reading: SensorReading?,
+    registeredName: String?,
+    registeredLocation: String?,
     isReading: Boolean,
     onRead: () -> Unit,
+    onRegister: (String, String) -> Unit,
 ) {
+    var showRegisterDialog by remember { mutableStateOf(false) }
+    var registerName by remember(registeredName, device.name) { mutableStateOf(registeredName ?: device.name ?: "") }
+    var registerLocation by remember(registeredLocation) { mutableStateOf(registeredLocation ?: "") }
+
+    if (showRegisterDialog) {
+        AlertDialog(
+            onDismissRequest = { showRegisterDialog = false },
+            title = { Text("Register Sensor") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = registerName,
+                        onValueChange = { registerName = it },
+                        label = { Text("Sensor Name") },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    OutlinedTextField(
+                        value = registerLocation,
+                        onValueChange = { registerLocation = it },
+                        label = { Text("Location") },
+                        placeholder = { Text("e.g. Tomatoes bed") },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    onRegister(registerName, registerLocation)
+                    showRegisterDialog = false
+                }) { Text("Save") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRegisterDialog = false }) { Text("Cancel") }
+            }
+        )
+    }
+
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(
@@ -101,16 +146,29 @@ private fun SensorDeviceCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column {
-                    Text(device.name ?: "Mi Flora", style = MaterialTheme.typography.titleMedium)
+                    Text(registeredName ?: device.name ?: "Mi Flora", style = MaterialTheme.typography.titleMedium)
                     Text(device.address, style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("Signal: ${device.rssi} dBm", style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (registeredLocation != null) {
+                        AssistChip(
+                            onClick = {},
+                            label = { Text(registeredLocation, style = MaterialTheme.typography.labelSmall) },
+                            modifier = Modifier.height(24.dp),
+                        )
+                    } else {
+                        Text("Signal: ${device.rssi} dBm", style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
-                if (isReading) {
-                    CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
-                } else {
-                    OutlinedButton(onClick = onRead) { Text("Read") }
+                Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    if (isReading) {
+                        CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
+                    } else {
+                        OutlinedButton(onClick = onRead) { Text("Read") }
+                    }
+                    TextButton(onClick = { showRegisterDialog = true }) {
+                        Text(if (registeredName != null) "Edit" else "Register")
+                    }
                 }
             }
             reading?.let { r ->

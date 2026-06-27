@@ -8,6 +8,7 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.WorkManager
+import com.gardenagent.data.work.DailyJournalWorker
 import com.gardenagent.data.work.MotionEventWorker
 import com.gardenagent.data.work.WeatherRefreshWorker
 import dagger.hilt.android.HiltAndroidApp
@@ -36,6 +37,11 @@ class GardenAgentApp : Application(), Configuration.Provider {
             ExistingPeriodicWorkPolicy.KEEP,
             MotionEventWorker.buildRequest(),
         )
+        workManager.enqueueUniquePeriodicWork(
+            DailyJournalWorker.WORK_NAME,
+            ExistingPeriodicWorkPolicy.KEEP,
+            DailyJournalWorker.buildRequest(),
+        )
     }
 
     override val workManagerConfiguration: Configuration
@@ -55,7 +61,25 @@ class GardenAgentApp : Application(), Configuration.Provider {
             },
             NotificationChannel("care_reminders", "Care Reminders", NotificationManager.IMPORTANCE_DEFAULT).apply {
                 description = "Garden watering and fertilizing reminders"
-            }
+            },
+            NotificationChannel("watering_reminders", "Watering", NotificationManager.IMPORTANCE_DEFAULT).apply {
+                description = "Watering reminders"
+            },
+            NotificationChannel("fertilizing_reminders", "Fertilizing", NotificationManager.IMPORTANCE_DEFAULT).apply {
+                description = "Fertilizing reminders"
+            },
+            NotificationChannel("mowing_reminders", "Mowing", NotificationManager.IMPORTANCE_DEFAULT).apply {
+                description = "Mowing reminders"
+            },
+            NotificationChannel("compost_reminders", "Compost", NotificationManager.IMPORTANCE_DEFAULT).apply {
+                description = "Compost turning reminders"
+            },
+            NotificationChannel("pesticides_reminders", "Pesticides", NotificationManager.IMPORTANCE_DEFAULT).apply {
+                description = "Pesticide application reminders"
+            },
+            NotificationChannel("daily_journal", "Daily Journal", NotificationManager.IMPORTANCE_LOW).apply {
+                description = "Daily AI-generated garden journal entries"
+            },
         ).forEach { manager.createNotificationChannel(it) }
     }
 }

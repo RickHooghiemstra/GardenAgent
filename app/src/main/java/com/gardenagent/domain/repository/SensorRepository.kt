@@ -8,4 +8,5 @@ interface SensorRepository {
     fun getLatestReadingForDevice(address: String): Flow<SensorReading?>
     suspend fun saveReading(reading: SensorReading)
     suspend fun deleteOldReadings(cutoffMs: Long)
+    suspend fun getLatestReadings(): List<SensorReading>
 }

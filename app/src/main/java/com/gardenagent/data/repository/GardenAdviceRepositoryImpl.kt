@@ -19,6 +19,11 @@ Analyze the provided garden data and give specific, actionable advice for today'
 Keep your response under 300 words. Use bullet points (•) for tasks.
 Focus on what needs to be done NOW based on the current conditions."""
 
+private const val JOURNAL_SYSTEM_PROMPT = """You are a garden journal assistant.
+Write a brief, warm daily journal entry for the gardener based on the provided conditions.
+Keep it under 200 words, personal and observational in tone.
+Mention what is happening in the garden today based on the weather and sensor data."""
+
 class GardenAdviceRepositoryImpl @Inject constructor(
     private val api: ClaudeApiService,
     @Named("claude_api_key") private val apiKey: String,
@@ -44,6 +49,23 @@ class GardenAdviceRepositoryImpl @Inject constructor(
             basedOnWeather = weather != null,
             basedOnSensors = sensorReadings.isNotEmpty(),
         )
+    }
+
+    override suspend fun getDailyJournalEntry(
+        weather: WeatherData?,
+        sensorReadings: List<SensorReading>,
+        plants: List<Plant>,
+    ): Result<String> = runCatching {
+        val prompt = buildPrompt(weather, sensorReadings, plants)
+        val response = api.sendMessage(
+            apiKey = apiKey,
+            request = ClaudeRequest(
+                system = JOURNAL_SYSTEM_PROMPT,
+                messages = listOf(ClaudeMessage(role = "user", content = prompt))
+            )
+        )
+        response.content.firstOrNull { it.type == "text" }?.text
+            ?: error("No text in Claude response")
     }
 
     internal fun buildPrompt(

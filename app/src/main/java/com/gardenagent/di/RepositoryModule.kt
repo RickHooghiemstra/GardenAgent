@@ -2,16 +2,22 @@ package com.gardenagent.di
 
 import com.gardenagent.data.repository.EufyRepositoryImpl
 import com.gardenagent.data.repository.GardenAdviceRepositoryImpl
+import com.gardenagent.data.repository.GardenRepositoryImpl
 import com.gardenagent.data.repository.JournalRepositoryImpl
+import com.gardenagent.data.repository.ManualCameraRepositoryImpl
 import com.gardenagent.data.repository.PlantIdentificationRepositoryImpl
 import com.gardenagent.data.repository.PlantRepositoryImpl
+import com.gardenagent.data.repository.SensorDeviceRepositoryImpl
 import com.gardenagent.data.repository.SensorRepositoryImpl
 import com.gardenagent.data.repository.WeatherRepositoryImpl
 import com.gardenagent.domain.repository.EufyRepository
 import com.gardenagent.domain.repository.GardenAdviceRepository
+import com.gardenagent.domain.repository.GardenRepository
 import com.gardenagent.domain.repository.JournalRepository
+import com.gardenagent.domain.repository.ManualCameraRepository
 import com.gardenagent.domain.repository.PlantIdentificationRepository
 import com.gardenagent.domain.repository.PlantRepository
+import com.gardenagent.domain.repository.SensorDeviceRepository
 import com.gardenagent.domain.repository.SensorRepository
 import com.gardenagent.domain.repository.WeatherRepository
 import dagger.Binds
@@ -44,4 +50,13 @@ abstract class RepositoryModule {
 
     @Binds @Singleton
     abstract fun bindGardenAdviceRepository(impl: GardenAdviceRepositoryImpl): GardenAdviceRepository
+
+    @Binds @Singleton
+    abstract fun bindGardenRepository(impl: GardenRepositoryImpl): GardenRepository
+
+    @Binds @Singleton
+    abstract fun bindManualCameraRepository(impl: ManualCameraRepositoryImpl): ManualCameraRepository
+
+    @Binds @Singleton
+    abstract fun bindSensorDeviceRepository(impl: SensorDeviceRepositoryImpl): SensorDeviceRepository
 }

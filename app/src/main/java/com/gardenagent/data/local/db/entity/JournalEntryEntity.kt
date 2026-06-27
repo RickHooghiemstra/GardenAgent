@@ -24,16 +24,18 @@ data class JournalEntryEntity(
     val capturedAt: Long = System.currentTimeMillis(),
     val weatherCondition: String?,
     val temperatureCelsius: Float?,
+    val gardenId: Long? = null,
+    val isAiGenerated: Boolean = false,
 )
 
 fun JournalEntryEntity.toDomain() = JournalEntry(
     id = id, plantId = plantId, photoPath = photoPath, notes = notes,
     capturedAt = capturedAt, weatherCondition = weatherCondition,
-    temperatureCelsius = temperatureCelsius,
+    temperatureCelsius = temperatureCelsius, gardenId = gardenId, isAiGenerated = isAiGenerated,
 )
 
 fun JournalEntry.toEntity() = JournalEntryEntity(
     id = id, plantId = plantId, photoPath = photoPath, notes = notes,
     capturedAt = capturedAt, weatherCondition = weatherCondition,
-    temperatureCelsius = temperatureCelsius,
+    temperatureCelsius = temperatureCelsius, gardenId = gardenId, isAiGenerated = isAiGenerated,
 )
