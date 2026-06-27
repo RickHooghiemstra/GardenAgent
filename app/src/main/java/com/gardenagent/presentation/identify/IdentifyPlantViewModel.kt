@@ -2,8 +2,10 @@ package com.gardenagent.presentation.identify
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gardenagent.domain.model.Plant
 import com.gardenagent.domain.model.PlantIdentification
 import com.gardenagent.domain.usecase.identification.IdentifyPlantUseCase
+import com.gardenagent.domain.usecase.plant.AddPlantUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,11 +17,13 @@ data class IdentifyUiState(
     val results: List<PlantIdentification> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
+    val addedPlantName: String? = null,
 )
 
 @HiltViewModel
 class IdentifyPlantViewModel @Inject constructor(
     private val identifyPlantUseCase: IdentifyPlantUseCase,
+    private val addPlantUseCase: AddPlantUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(IdentifyUiState())
@@ -42,4 +46,18 @@ class IdentifyPlantViewModel @Inject constructor(
                 }
         }
     }
+
+    fun addToGarden(result: PlantIdentification) {
+        viewModelScope.launch {
+            addPlantUseCase(Plant(
+                commonName = result.commonName,
+                scientificName = result.scientificName.takeIf { it.isNotBlank() },
+                family = result.family.takeIf { it.isNotBlank() },
+                photoPath = _uiState.value.photoPath,
+            ))
+            _uiState.value = _uiState.value.copy(addedPlantName = result.commonName)
+        }
+    }
+
+    fun clearAddedPlant() { _uiState.value = _uiState.value.copy(addedPlantName = null) }
 }

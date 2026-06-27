@@ -8,4 +8,6 @@ data class JournalEntry(
     val capturedAt: Long = System.currentTimeMillis(),
     val weatherCondition: String? = null,
     val temperatureCelsius: Float? = null,
+    val gardenId: Long? = null,
+    val isAiGenerated: Boolean = false,
 )

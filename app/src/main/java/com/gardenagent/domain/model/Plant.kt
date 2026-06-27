@@ -9,6 +9,7 @@ data class Plant(
     val plantedDate: Long? = null,
     val locationInGarden: String? = null,
     val notes: String? = null,
+    val gardenId: Long? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
 )

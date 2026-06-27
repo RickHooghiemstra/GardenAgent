@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,9 +20,19 @@ import kotlin.math.roundToInt
 @Composable
 fun IdentifyPlantScreen(
     onBack: () -> Unit,
+    onPlantAdded: () -> Unit = {},
     viewModel: IdentifyPlantViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(state.addedPlantName) {
+        state.addedPlantName?.let { name ->
+            snackbarHostState.showSnackbar("\"$name\" added to My Garden")
+            viewModel.clearAddedPlant()
+            onPlantAdded()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -29,7 +40,8 @@ fun IdentifyPlantScreen(
                 title = { Text("Identify Plant") },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") } }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
@@ -65,7 +77,10 @@ fun IdentifyPlantScreen(
             if (state.results.isNotEmpty()) {
                 item { Text("Results", style = MaterialTheme.typography.titleMedium) }
                 items(state.results, key = { it.scientificName }) { result ->
-                    IdentificationResultCard(result)
+                    IdentificationResultCard(
+                        result = result,
+                        onAddToGarden = { viewModel.addToGarden(result) },
+                    )
                 }
             }
         }
@@ -73,7 +88,10 @@ fun IdentifyPlantScreen(
 }
 
 @Composable
-private fun IdentificationResultCard(result: PlantIdentification) {
+private fun IdentificationResultCard(
+    result: PlantIdentification,
+    onAddToGarden: () -> Unit,
+) {
     val pct = (result.confidence * 100).roundToInt()
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -103,6 +121,14 @@ private fun IdentificationResultCard(result: PlantIdentification) {
                     else -> MaterialTheme.colorScheme.outline
                 }
             )
+            OutlinedButton(
+                onClick = onAddToGarden,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(4.dp))
+                Text("Add to My Garden")
+            }
         }
     }
 }

@@ -14,8 +14,10 @@ class EufyRepositoryImpl @Inject constructor(
 ) : EufyRepository {
 
     override suspend fun login(email: String, password: String): Result<Unit> = runCatching {
-        val response = api.login(EufyLoginRequest(email = email, password = password))
-        val data = response.data ?: error("Login failed: ${response.msg}")
+        val openudid = dataStore.getOrCreateOpenUdid()
+        val response = api.login(EufyLoginRequest(email = email, password = password, openudid = openudid))
+        if (response.code != 0) error("Login failed (${response.code}): ${response.msg ?: "Unknown error"}")
+        val data = response.data ?: error("Login failed: empty response")
         dataStore.saveEufyCredentials(data.accessToken, data.userId)
     }
 

@@ -14,6 +14,7 @@ data class PlantEntity(
     val plantedDate: Long?,
     val locationInGarden: String?,
     val notes: String?,
+    val gardenId: Long? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
 )
@@ -21,13 +22,13 @@ data class PlantEntity(
 fun PlantEntity.toDomain() = Plant(
     id = id, commonName = commonName, scientificName = scientificName,
     family = family, photoPath = photoPath, plantedDate = plantedDate,
-    locationInGarden = locationInGarden, notes = notes,
+    locationInGarden = locationInGarden, notes = notes, gardenId = gardenId,
     createdAt = createdAt, updatedAt = updatedAt,
 )
 
 fun Plant.toEntity() = PlantEntity(
     id = id, commonName = commonName, scientificName = scientificName,
     family = family, photoPath = photoPath, plantedDate = plantedDate,
-    locationInGarden = locationInGarden, notes = notes,
+    locationInGarden = locationInGarden, notes = notes, gardenId = gardenId,
     createdAt = createdAt, updatedAt = updatedAt,
 )
