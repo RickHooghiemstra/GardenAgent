@@ -11,6 +11,7 @@ data class EufyLoginRequest(
     val country: String = java.util.Locale.getDefault().country.takeIf { it.isNotEmpty() } ?: "US",
     val timezone: String = java.util.TimeZone.getDefault().id,
     val lang: String = java.util.Locale.getDefault().language.takeIf { it.isNotEmpty() } ?: "en",
+    @SerialName("phone_code") val phoneCode: String = java.util.Locale.getDefault().country.takeIf { it.isNotEmpty() } ?: "1",
     @SerialName("client_id") val clientId: String = "eufyhome-app",
     @SerialName("client_secret") val clientSecret: String = "GQF6xedVqnStFriR",
 )

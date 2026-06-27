@@ -91,11 +91,23 @@ class SensorViewModel @Inject constructor(
         }
     }
 
-    fun registerDevice(address: String, name: String, location: String) {
+    fun registerDevice(address: String, name: String, location: String, brand: String = "") {
         viewModelScope.launch {
             sensorDeviceRepository.registerDevice(SensorDevice(
                 address = address,
-                deviceName = name,
+                deviceName = name.trim().ifBlank { brand },
+                locationDescription = location.trim().takeIf { it.isNotBlank() },
+            ))
+        }
+    }
+
+    fun registerManualDevice(name: String, location: String) {
+        // Use a synthetic address so it appears in the registered list but has no BLE address
+        val syntheticAddress = "manual:${System.currentTimeMillis()}"
+        viewModelScope.launch {
+            sensorDeviceRepository.registerDevice(SensorDevice(
+                address = syntheticAddress,
+                deviceName = name.trim(),
                 locationDescription = location.trim().takeIf { it.isNotBlank() },
             ))
         }

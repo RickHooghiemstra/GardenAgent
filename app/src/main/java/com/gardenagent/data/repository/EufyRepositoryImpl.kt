@@ -16,8 +16,17 @@ class EufyRepositoryImpl @Inject constructor(
     override suspend fun login(email: String, password: String): Result<Unit> = runCatching {
         val openudid = dataStore.getOrCreateOpenUdid()
         val response = api.login(EufyLoginRequest(email = email, password = password, openudid = openudid))
-        if (response.code != 0) error("Login failed (${response.code}): ${response.msg ?: "Unknown error"}")
-        val data = response.data ?: error("Login failed: empty response")
+        if (response.code != 0) {
+            val hint = when (response.code) {
+                26050 -> "Wrong email or password."
+                26003 -> "Eufy sent a verification code to your email. Complete verification in the Eufy app first, then retry here."
+                10001 -> "Please verify your email address in the Eufy app before logging in."
+                10002 -> "Eufy requires a captcha. Open the Eufy app once to clear it, then retry."
+                else -> response.msg ?: "Unknown error (code ${response.code})"
+            }
+            error(hint)
+        }
+        val data = response.data ?: error("Login failed: Eufy returned no user data")
         dataStore.saveEufyCredentials(data.accessToken, data.userId)
     }
 
