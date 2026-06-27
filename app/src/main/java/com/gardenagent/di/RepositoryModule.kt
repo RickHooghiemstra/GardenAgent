@@ -1,6 +1,7 @@
 package com.gardenagent.di
 
 import com.gardenagent.data.repository.EufyRepositoryImpl
+import com.gardenagent.data.repository.MaintenanceTaskRepositoryImpl
 import com.gardenagent.data.repository.GardenAdviceRepositoryImpl
 import com.gardenagent.data.repository.GardenRepositoryImpl
 import com.gardenagent.data.repository.JournalRepositoryImpl
@@ -11,6 +12,7 @@ import com.gardenagent.data.repository.SensorDeviceRepositoryImpl
 import com.gardenagent.data.repository.SensorRepositoryImpl
 import com.gardenagent.data.repository.WeatherRepositoryImpl
 import com.gardenagent.domain.repository.EufyRepository
+import com.gardenagent.domain.repository.MaintenanceTaskRepository
 import com.gardenagent.domain.repository.GardenAdviceRepository
 import com.gardenagent.domain.repository.GardenRepository
 import com.gardenagent.domain.repository.JournalRepository
@@ -59,4 +61,7 @@ abstract class RepositoryModule {
 
     @Binds @Singleton
     abstract fun bindSensorDeviceRepository(impl: SensorDeviceRepositoryImpl): SensorDeviceRepository
+
+    @Binds @Singleton
+    abstract fun bindMaintenanceTaskRepository(impl: MaintenanceTaskRepositoryImpl): MaintenanceTaskRepository
 }

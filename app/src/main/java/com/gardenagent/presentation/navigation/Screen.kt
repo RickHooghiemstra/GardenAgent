@@ -23,6 +23,7 @@ sealed class Screen(val route: String) {
         fun createRoute(sn: String) = "cameras/$sn"
     }
     data object AddManualCamera : Screen("cameras/add")
+    data object ConnectEufy : Screen("cameras/connect_eufy")
     data object Advice : Screen("advice")
     data object Settings : Screen("settings")
     data object GardenList : Screen("gardens")

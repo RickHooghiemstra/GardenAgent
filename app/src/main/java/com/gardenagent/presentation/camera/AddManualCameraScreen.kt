@@ -83,11 +83,6 @@ fun AddManualCameraScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text("Camera Brand", style = MaterialTheme.typography.titleMedium)
-            Text(
-                "Eufy cameras are added automatically — log in via Settings. For all other cameras use RTSP below.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
 
             // Brand chip selector
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

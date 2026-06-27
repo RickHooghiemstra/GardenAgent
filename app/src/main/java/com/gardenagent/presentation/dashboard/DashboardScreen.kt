@@ -18,6 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.gardenagent.domain.model.GardenAdvice
 import com.gardenagent.domain.model.JournalEntry
+import com.gardenagent.domain.model.MaintenanceTask
 import com.gardenagent.domain.model.WeatherData
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -73,6 +74,23 @@ fun DashboardScreen(
                     error = state.adviceError,
                     onRefresh = viewModel::refreshAdvice,
                 )
+            }
+            // Upcoming maintenance schedule
+            item {
+                Text("This Week", style = MaterialTheme.typography.titleMedium)
+            }
+            if (state.upcomingTasks.isEmpty()) {
+                item {
+                    Text(
+                        "No schedule yet — tap Refresh to generate one.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else {
+                items(state.upcomingTasks, key = { it.id }) { task ->
+                    MaintenanceTaskCard(task)
+                }
             }
             // Recent journal entries
             if (state.recentEntries.isNotEmpty()) {
@@ -172,6 +190,31 @@ private fun AdviceCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun MaintenanceTaskCard(task: MaintenanceTask) {
+    val dateStr = remember(task.scheduledFor) {
+        SimpleDateFormat("EEE d MMM, HH:mm", Locale.getDefault()).format(Date(task.scheduledFor))
+    }
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                SuggestionChip(onClick = {}, label = { Text(dateStr, style = MaterialTheme.typography.labelSmall) })
+                task.plantName?.let {
+                    Text(it, style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary)
+                }
+            }
+            Text(task.description, style = MaterialTheme.typography.bodyMedium)
+            Text(task.reason, style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

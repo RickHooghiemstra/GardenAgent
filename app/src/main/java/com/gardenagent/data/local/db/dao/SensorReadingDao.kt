@@ -15,6 +15,9 @@ interface SensorReadingDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertReading(reading: SensorReadingEntity)
 
+    @Query("SELECT * FROM sensor_readings WHERE recordedAt >= :sinceMs ORDER BY recordedAt DESC")
+    suspend fun getReadingsSince(sinceMs: Long): List<SensorReadingEntity>
+
     @Query("DELETE FROM sensor_readings WHERE recordedAt < :cutoffMs")
     suspend fun deleteOldReadings(cutoffMs: Long)
 

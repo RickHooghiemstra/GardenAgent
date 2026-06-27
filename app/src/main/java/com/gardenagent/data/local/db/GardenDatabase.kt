@@ -6,6 +6,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.gardenagent.data.local.db.dao.GardenDao
 import com.gardenagent.data.local.db.dao.JournalEntryDao
+import com.gardenagent.data.local.db.dao.MaintenanceTaskDao
 import com.gardenagent.data.local.db.dao.ManualCameraDao
 import com.gardenagent.data.local.db.dao.PlantDao
 import com.gardenagent.data.local.db.dao.SensorDeviceDao
@@ -13,6 +14,7 @@ import com.gardenagent.data.local.db.dao.SensorReadingDao
 import com.gardenagent.data.local.db.dao.WeatherReadingDao
 import com.gardenagent.data.local.db.entity.GardenEntity
 import com.gardenagent.data.local.db.entity.JournalEntryEntity
+import com.gardenagent.data.local.db.entity.MaintenanceTaskEntity
 import com.gardenagent.data.local.db.entity.ManualCameraEntity
 import com.gardenagent.data.local.db.entity.PlantEntity
 import com.gardenagent.data.local.db.entity.SensorDeviceEntity
@@ -28,8 +30,9 @@ import com.gardenagent.data.local.db.entity.WeatherReadingEntity
         GardenEntity::class,
         ManualCameraEntity::class,
         SensorDeviceEntity::class,
+        MaintenanceTaskEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class GardenDatabase : RoomDatabase() {
@@ -40,8 +43,15 @@ abstract class GardenDatabase : RoomDatabase() {
     abstract fun gardenDao(): GardenDao
     abstract fun manualCameraDao(): ManualCameraDao
     abstract fun sensorDeviceDao(): SensorDeviceDao
+    abstract fun maintenanceTaskDao(): MaintenanceTaskDao
 
     companion object {
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `maintenance_tasks` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `description` TEXT NOT NULL, `scheduledFor` INTEGER NOT NULL, `plantName` TEXT, `reason` TEXT NOT NULL, `workManagerId` TEXT)")
+            }
+        }
+
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `gardens` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `type` TEXT NOT NULL, `description` TEXT, `createdAt` INTEGER NOT NULL)")

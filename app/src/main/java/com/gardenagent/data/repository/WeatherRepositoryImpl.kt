@@ -5,6 +5,7 @@ import com.gardenagent.data.local.db.dao.WeatherReadingDao
 import com.gardenagent.data.local.db.entity.toDomain
 import com.gardenagent.data.local.db.entity.toEntity
 import com.gardenagent.data.remote.weather.OpenMeteoApiService
+import com.gardenagent.domain.model.ForecastDay
 import com.gardenagent.domain.model.WeatherData
 import com.gardenagent.domain.repository.WeatherRepository
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -64,5 +65,34 @@ class WeatherRepositoryImpl @Inject constructor(
         )
         dao.insertReading(data.toEntity())
         data
+    }
+
+    @SuppressLint("MissingPermission")
+    override suspend fun getForecastDays(): List<ForecastDay> {
+        val location = suspendCancellableCoroutine { cont ->
+            locationClient.lastLocation.addOnSuccessListener { loc -> cont.resume(loc) }
+                .addOnFailureListener { cont.resume(null) }
+        }
+        val lat = location?.latitude ?: 52.3676
+        val lon = location?.longitude ?: 4.9041
+        val response = api.getForecast(
+            latitude = lat,
+            longitude = lon,
+            current = "temperature_2m,relative_humidity_2m,precipitation,uv_index",
+            hourly = "soil_temperature_0cm",
+            daily = "temperature_2m_max,temperature_2m_min,precipitation_sum,uv_index_max,et0_fao_evapotranspiration",
+            timezone = "auto",
+        )
+        val daily = response.daily ?: return emptyList()
+        return daily.time.indices.map { i ->
+            ForecastDay(
+                date = daily.time[i],
+                tempMaxC = daily.tempMax.getOrElse(i) { 0f },
+                tempMinC = daily.tempMin.getOrElse(i) { 0f },
+                precipMm = daily.precipSum.getOrElse(i) { 0f },
+                uvIndexMax = daily.uvIndexMax.getOrElse(i) { 0f },
+                evapotranspirationMm = daily.evapotranspiration.getOrElse(i) { 0f },
+            )
+        }
     }
 }

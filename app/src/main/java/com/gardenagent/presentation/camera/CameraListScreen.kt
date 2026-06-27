@@ -24,6 +24,7 @@ fun CameraListScreen(
     onCameraClick: (String) -> Unit,
     onSettings: () -> Unit,
     onAddManualCamera: () -> Unit = {},
+    onConnectEufy: () -> Unit = {},
     viewModel: CameraListViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -69,13 +70,34 @@ fun CameraListScreen(
             }
             if (state.cameras.isEmpty() && !state.isLoading) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("No cameras found.", style = MaterialTheme.typography.bodyLarge)
-                        Spacer(Modifier.height(8.dp))
-                        Text("Log in to Eufy in Settings or add a manual RTSP camera.",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(Modifier.height(16.dp))
-                        Button(onClick = onSettings) { Text("Go to Settings") }
+                    Column(
+                        modifier = Modifier.padding(horizontal = 32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        Card(Modifier.fillMaxWidth()) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Text("Eufy Cameras", style = MaterialTheme.typography.titleMedium)
+                                Text(
+                                    "No Eufy cameras connected.",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                OutlinedButton(
+                                    onClick = onConnectEufy,
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                    Text("Connect Eufy")
+                                }
+                            }
+                        }
+                        Text(
+                            "Or use the + button to add a manual RTSP camera.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             } else {

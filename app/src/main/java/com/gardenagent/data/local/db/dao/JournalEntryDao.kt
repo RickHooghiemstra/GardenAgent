@@ -15,6 +15,9 @@ interface JournalEntryDao {
     @Query("SELECT * FROM journal_entries ORDER BY capturedAt DESC LIMIT :limit")
     fun getRecentEntries(limit: Int): Flow<List<JournalEntryEntity>>
 
+    @Query("SELECT * FROM journal_entries WHERE capturedAt >= :sinceMs ORDER BY capturedAt DESC LIMIT :limit")
+    suspend fun getEntriesSince(sinceMs: Long, limit: Int): List<JournalEntryEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntry(entry: JournalEntryEntity): Long
 

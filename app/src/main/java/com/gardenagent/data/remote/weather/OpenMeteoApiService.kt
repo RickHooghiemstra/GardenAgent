@@ -11,6 +11,7 @@ interface OpenMeteoApiService {
         @Query("longitude") longitude: Double,
         @Query("current") current: String,
         @Query("hourly") hourly: String,
+        @Query("daily") daily: String? = null,
         @Query("timezone") timezone: String,
     ): WeatherResponse
 }

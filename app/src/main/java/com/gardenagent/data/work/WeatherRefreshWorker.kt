@@ -3,7 +3,10 @@ package com.gardenagent.data.work
 import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
 import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.gardenagent.domain.repository.WeatherRepository
 import dagger.assisted.Assisted
@@ -19,6 +22,11 @@ class WeatherRefreshWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         weatherRepository.refreshWeather()
+        WorkManager.getInstance(applicationContext).enqueueUniqueWork(
+            "generate_schedule",
+            ExistingWorkPolicy.REPLACE,
+            OneTimeWorkRequest.from(GenerateMaintenanceScheduleWorker::class.java),
+        )
         return Result.success()
     }
 

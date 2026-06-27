@@ -4,9 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gardenagent.domain.model.GardenAdvice
 import com.gardenagent.domain.model.JournalEntry
+import com.gardenagent.domain.model.MaintenanceTask
 import com.gardenagent.domain.model.WeatherData
 import com.gardenagent.domain.repository.JournalRepository
+import com.gardenagent.domain.repository.MaintenanceTaskRepository
 import com.gardenagent.domain.usecase.advice.GetGardenAdviceUseCase
+import com.gardenagent.domain.usecase.maintenance.GenerateMaintenanceScheduleUseCase
+import com.gardenagent.domain.usecase.maintenance.ScheduleMaintenanceNotificationsUseCase
 import com.gardenagent.domain.usecase.weather.GetCurrentWeatherUseCase
 import com.gardenagent.domain.usecase.weather.RefreshWeatherUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,6 +22,7 @@ data class DashboardUiState(
     val weather: WeatherData? = null,
     val advice: GardenAdvice? = null,
     val recentEntries: List<JournalEntry> = emptyList(),
+    val upcomingTasks: List<MaintenanceTask> = emptyList(),
     val isLoadingWeather: Boolean = false,
     val isLoadingAdvice: Boolean = false,
     val weatherError: String? = null,
@@ -29,7 +34,10 @@ class DashboardViewModel @Inject constructor(
     getCurrentWeatherUseCase: GetCurrentWeatherUseCase,
     private val refreshWeatherUseCase: RefreshWeatherUseCase,
     private val getGardenAdviceUseCase: GetGardenAdviceUseCase,
+    private val generateMaintenanceSchedule: GenerateMaintenanceScheduleUseCase,
+    private val scheduleNotifications: ScheduleMaintenanceNotificationsUseCase,
     journalRepository: JournalRepository,
+    maintenanceTaskRepository: MaintenanceTaskRepository,
 ) : ViewModel() {
 
     private val _advice = MutableStateFlow<GardenAdvice?>(null)
@@ -42,13 +50,14 @@ class DashboardViewModel @Inject constructor(
         getCurrentWeatherUseCase(),
         _advice,
         journalRepository.getRecentEntries(5),
-        _isLoadingWeather,
-        _isLoadingAdvice,
-    ) { weather, advice, entries, loadingWeather, loadingAdvice ->
+        maintenanceTaskRepository.getUpcomingTasks(),
+        combine(_isLoadingWeather, _isLoadingAdvice) { lw, la -> lw to la },
+    ) { weather, advice, entries, tasks, (loadingWeather, loadingAdvice) ->
         DashboardUiState(
             weather = weather,
             advice = advice,
             recentEntries = entries,
+            upcomingTasks = tasks,
             isLoadingWeather = loadingWeather,
             isLoadingAdvice = loadingAdvice,
             weatherError = _weatherError.value,
@@ -76,6 +85,8 @@ class DashboardViewModel @Inject constructor(
             getGardenAdviceUseCase()
                 .onSuccess { _advice.value = it }
                 .onFailure { _adviceError.value = it.message }
+            generateMaintenanceSchedule()
+                .onSuccess { tasks -> scheduleNotifications(tasks) }
             _isLoadingAdvice.value = false
         }
     }

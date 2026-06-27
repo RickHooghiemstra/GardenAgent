@@ -25,6 +25,7 @@ import androidx.navigation.navArgument
 import com.gardenagent.presentation.camera.AddManualCameraScreen
 import com.gardenagent.presentation.camera.CameraListScreen
 import com.gardenagent.presentation.camera.CameraViewScreen
+import com.gardenagent.presentation.camera.ConnectEufyScreen
 import com.gardenagent.presentation.dashboard.DashboardScreen
 import com.gardenagent.presentation.gardens.CreateGardenScreen
 import com.gardenagent.presentation.gardens.GardenListScreen
@@ -164,6 +165,7 @@ fun AppNavHost() {
                     onCameraClick = { sn -> navController.navigate(Screen.CameraView.createRoute(sn)) },
                     onSettings = { navController.navigate(Screen.Settings.route) },
                     onAddManualCamera = { navController.navigate(Screen.AddManualCamera.route) },
+                    onConnectEufy = { navController.navigate(Screen.ConnectEufy.route) },
                 )
             }
             composable(Screen.CameraView.route) { backStackEntry ->
@@ -176,11 +178,15 @@ fun AppNavHost() {
             composable(Screen.AddManualCamera.route) {
                 AddManualCameraScreen(onBack = { navController.popBackStack() })
             }
+            composable(Screen.ConnectEufy.route) {
+                ConnectEufyScreen(onBack = { navController.popBackStack() })
+            }
             composable(Screen.Settings.route) {
                 SettingsScreen(
                     onBack = { navController.popBackStack() },
                     onNotificationSettings = { navController.navigate(Screen.NotificationSettings.route) },
                     onGardenList = { navController.navigate(Screen.GardenList.route) },
+                    onConnectEufy = { navController.navigate(Screen.ConnectEufy.route) },
                 )
             }
             composable(Screen.GardenList.route) {

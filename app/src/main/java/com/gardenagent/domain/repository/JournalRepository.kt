@@ -9,4 +9,5 @@ interface JournalRepository {
     fun getRecentEntries(limit: Int = 10): Flow<List<JournalEntry>>
     suspend fun insertEntry(entry: JournalEntry): Long
     suspend fun deleteEntry(entry: JournalEntry)
+    suspend fun getEntriesSince(sinceMs: Long, limit: Int): List<JournalEntry>
 }

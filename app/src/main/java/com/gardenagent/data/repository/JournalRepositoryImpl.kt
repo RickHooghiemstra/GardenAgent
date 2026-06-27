@@ -15,4 +15,6 @@ class JournalRepositoryImpl @Inject constructor(private val dao: JournalEntryDao
     override fun getRecentEntries(limit: Int): Flow<List<JournalEntry>> = dao.getRecentEntries(limit).map { it.map { e -> e.toDomain() } }
     override suspend fun insertEntry(entry: JournalEntry): Long = dao.insertEntry(entry.toEntity())
     override suspend fun deleteEntry(entry: JournalEntry) = dao.deleteEntry(entry.toEntity())
+    override suspend fun getEntriesSince(sinceMs: Long, limit: Int): List<JournalEntry> =
+        dao.getEntriesSince(sinceMs, limit).map { it.toDomain() }
 }
