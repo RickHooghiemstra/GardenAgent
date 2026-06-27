@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.flow.first
 
 data class CameraListItem(
     val id: String,
@@ -85,6 +86,15 @@ class CameraListViewModel @Inject constructor(
         }
 
         refresh()
+    }
+
+    fun deleteManualCamera(item: CameraListItem) {
+        viewModelScope.launch {
+            val id = item.id.removePrefix("manual_").toLongOrNull() ?: return@launch
+            manualCameraRepository.getCameras().first().find { it.id == id }?.let {
+                manualCameraRepository.deleteCamera(it)
+            }
+        }
     }
 
     fun refresh() {

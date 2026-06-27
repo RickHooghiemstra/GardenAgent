@@ -23,6 +23,7 @@ import com.gardenagent.domain.model.GardenType
 fun GardenListScreen(
     onBack: () -> Unit,
     onCreateGarden: () -> Unit,
+    onGardenClick: (Garden) -> Unit = {},
     viewModel: GardenListViewModel = hiltViewModel(),
 ) {
     val gardens by viewModel.gardens.collectAsStateWithLifecycle()
@@ -76,6 +77,7 @@ fun GardenListScreen(
                 items(gardens, key = { it.id }) { garden ->
                     GardenCard(
                         garden = garden,
+                        onClick = { onGardenClick(garden) },
                         onLongPress = { gardenToDelete = garden },
                         onDelete = { gardenToDelete = garden },
                     )
@@ -89,6 +91,7 @@ fun GardenListScreen(
 @Composable
 private fun GardenCard(
     garden: Garden,
+    onClick: () -> Unit,
     onLongPress: () -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -96,7 +99,7 @@ private fun GardenCard(
         modifier = Modifier
             .fillMaxWidth()
             .combinedClickable(
-                onClick = {},
+                onClick = onClick,
                 onLongClick = onLongPress,
             )
     ) {

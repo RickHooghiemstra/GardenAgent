@@ -21,6 +21,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.gardenagent.presentation.camera.AddManualCameraScreen
 import com.gardenagent.presentation.camera.CameraListScreen
 import com.gardenagent.presentation.camera.CameraViewScreen
@@ -111,8 +112,13 @@ fun AppNavHost() {
                     onNavigateToGardens = { navController.navigate(Screen.GardenList.route) },
                 )
             }
-            composable(Screen.PlantList.route) {
+            composable(
+                Screen.PlantList.route,
+                arguments = listOf(navArgument("gardenId") { nullable = true; defaultValue = null })
+            ) { backStackEntry ->
+                val gardenId = backStackEntry.arguments?.getString("gardenId")?.toLongOrNull()
                 PlantListScreen(
+                    gardenId = gardenId,
                     onPlantClick = { id -> navController.navigate(Screen.PlantDetail.createRoute(id)) },
                     onAddPlant = { navController.navigate(Screen.AddPlant.route) }
                 )
@@ -181,6 +187,7 @@ fun AppNavHost() {
                 GardenListScreen(
                     onBack = { navController.popBackStack() },
                     onCreateGarden = { navController.navigate(Screen.CreateGarden.route) },
+                    onGardenClick = { garden -> navController.navigate(Screen.PlantList.createRoute(garden.id)) },
                 )
             }
             composable(Screen.CreateGarden.route) {

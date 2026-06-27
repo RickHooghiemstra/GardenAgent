@@ -2,7 +2,10 @@ package com.gardenagent.presentation.navigation
 
 sealed class Screen(val route: String) {
     data object Dashboard : Screen("dashboard")
-    data object PlantList : Screen("plants")
+    data object PlantList : Screen("plants?gardenId={gardenId}") {
+        fun createRoute(gardenId: Long? = null) =
+            "plants${gardenId?.let { "?gardenId=$it" } ?: ""}"
+    }
     data object PlantDetail : Screen("plants/{plantId}") {
         fun createRoute(plantId: Long) = "plants/$plantId"
     }

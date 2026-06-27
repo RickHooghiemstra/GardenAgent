@@ -1,6 +1,7 @@
 package com.gardenagent.presentation.camera
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CameraListScreen(
     onCameraClick: (String) -> Unit,
@@ -25,6 +27,24 @@ fun CameraListScreen(
     viewModel: CameraListViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    var cameraToDelete by remember { mutableStateOf<CameraListItem?>(null) }
+
+    cameraToDelete?.let { camera ->
+        AlertDialog(
+            onDismissRequest = { cameraToDelete = null },
+            title = { Text("Delete Camera") },
+            text = { Text("Delete \"${camera.name}\"? This cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteManualCamera(camera)
+                    cameraToDelete = null
+                }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { cameraToDelete = null }) { Text("Cancel") }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -66,9 +86,8 @@ fun CameraListScreen(
                     items(state.cameras, key = { it.id }) { camera ->
                         CameraListItemCard(
                             camera = camera,
-                            onClick = {
-                                if (!camera.isManual) onCameraClick(camera.id)
-                            },
+                            onClick = { onCameraClick(camera.id) },
+                            onLongPress = { cameraToDelete = camera },
                         )
                     }
                 }
@@ -77,12 +96,20 @@ fun CameraListScreen(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun CameraListItemCard(camera: CameraListItem, onClick: () -> Unit) {
+private fun CameraListItemCard(
+    camera: CameraListItem,
+    onClick: () -> Unit,
+    onLongPress: () -> Unit,
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(enabled = camera.isOnline || camera.isManual, onClick = onClick)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = if (camera.isManual) onLongPress else null,
+            )
     ) {
         Row(
             Modifier.padding(16.dp).fillMaxWidth(),
