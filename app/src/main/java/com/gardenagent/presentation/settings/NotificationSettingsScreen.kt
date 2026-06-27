@@ -87,6 +87,7 @@ fun NotificationSettingsScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ReminderTimePicker(
     hour: Int,
@@ -94,28 +95,31 @@ private fun ReminderTimePicker(
     onHourChange: (Int) -> Unit,
     onMinuteChange: (Int) -> Unit,
 ) {
-    Card(Modifier.fillMaxWidth()) {
-        Row(
-            Modifier.padding(16.dp).fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text("Time:", style = MaterialTheme.typography.bodyMedium)
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Hour", style = MaterialTheme.typography.labelSmall)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = { onHourChange((hour - 1 + 24) % 24) }) { Text("<") }
-                    Text("%02d".format(hour), style = MaterialTheme.typography.titleMedium)
-                    IconButton(onClick = { onHourChange((hour + 1) % 24) }) { Text(">") }
-                }
-            }
-            Text(":", style = MaterialTheme.typography.titleLarge)
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Minute", style = MaterialTheme.typography.labelSmall)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = { onMinuteChange((minute - 5 + 60) % 60) }) { Text("<") }
-                    Text("%02d".format(minute), style = MaterialTheme.typography.titleMedium)
-                    IconButton(onClick = { onMinuteChange((minute + 5) % 60) }) { Text(">") }
+    var showTimePicker by remember { mutableStateOf(false) }
+
+    OutlinedButton(onClick = { showTimePicker = true }) {
+        Text("Reminder at %02d:%02d".format(hour, minute))
+    }
+
+    if (showTimePicker) {
+        BasicAlertDialog(onDismissRequest = { showTimePicker = false }) {
+            Surface(shape = MaterialTheme.shapes.extraLarge, tonalElevation = 6.dp) {
+                Column(Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        "Select time",
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.padding(bottom = 20.dp),
+                    )
+                    val timePickerState = rememberTimePickerState(initialHour = hour, initialMinute = minute)
+                    TimePicker(state = timePickerState)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                        TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
+                        TextButton(onClick = {
+                            onHourChange(timePickerState.hour)
+                            onMinuteChange(timePickerState.minute)
+                            showTimePicker = false
+                        }) { Text("OK") }
+                    }
                 }
             }
         }

@@ -42,8 +42,14 @@ fun WeatherScreen(viewModel: WeatherViewModel = hiltViewModel()) {
                     WeatherContent(state.weather!!, state.isLoading)
                 }
                 state.error != null -> {
-                    Text(state.error!!, Modifier.align(Alignment.Center).padding(16.dp),
-                        color = MaterialTheme.colorScheme.error)
+                    Column(
+                        Modifier.align(Alignment.Center).padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(state.error!!, color = MaterialTheme.colorScheme.error)
+                        Spacer(Modifier.height(8.dp))
+                        Button(onClick = viewModel::refresh) { Text("Retry") }
+                    }
                 }
             }
         }
@@ -63,6 +69,11 @@ private fun WeatherContent(weather: WeatherData, isRefreshing: Boolean) {
         Text("Last updated: $updatedStr",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            "Location: ${"%.4f".format(weather.latitude)}°, ${"%.4f".format(weather.longitude)}°",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         WeatherMetricCard("Temperature", "${weather.temperatureCelsius.toInt()}°C", "Current air temperature")
         WeatherMetricCard("Humidity", "${weather.humidity}%", "Relative air humidity")
         WeatherMetricCard("UV Index", weather.uvIndex.toString(), uvDescription(weather.uvIndex))

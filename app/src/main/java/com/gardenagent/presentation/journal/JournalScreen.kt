@@ -1,5 +1,7 @@
 package com.gardenagent.presentation.journal
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,12 +21,32 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun JournalScreen(
     onAddEntry: () -> Unit,
     viewModel: JournalViewModel = hiltViewModel(),
 ) {
     val entries by viewModel.entries.collectAsStateWithLifecycle()
+    var entryToDelete by remember { mutableStateOf<JournalEntry?>(null) }
+    var expandedEntryId by remember { mutableStateOf<Long?>(null) }
+
+    entryToDelete?.let { entry ->
+        AlertDialog(
+            onDismissRequest = { entryToDelete = null },
+            title = { Text("Delete Entry") },
+            text = { Text("Delete this journal entry? This cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteEntry(entry)
+                    entryToDelete = null
+                }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { entryToDelete = null }) { Text("Cancel") }
+            }
+        )
+    }
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Garden Journal") }) },
@@ -46,18 +68,33 @@ fun JournalScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                items(entries, key = { it.id }) { entry -> JournalEntryCard(entry) }
+                items(entries, key = { it.id }) { entry ->
+                    JournalEntryCard(
+                        entry = entry,
+                        isExpanded = expandedEntryId == entry.id,
+                        onClick = { expandedEntryId = if (expandedEntryId == entry.id) null else entry.id },
+                        onLongPress = { entryToDelete = entry },
+                    )
+                }
             }
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun JournalEntryCard(entry: JournalEntry) {
+private fun JournalEntryCard(
+    entry: JournalEntry,
+    isExpanded: Boolean,
+    onClick: () -> Unit,
+    onLongPress: () -> Unit,
+) {
     val dateStr = remember(entry.capturedAt) {
         SimpleDateFormat("EEEE, d MMMM yyyy", Locale.getDefault()).format(Date(entry.capturedAt))
     }
-    Card(Modifier.fillMaxWidth()) {
+    Card(
+        Modifier.fillMaxWidth().combinedClickable(onClick = onClick, onLongClick = onLongPress)
+    ) {
         Column {
             entry.photoPath?.let {
                 AsyncImage(
@@ -87,7 +124,10 @@ private fun JournalEntryCard(entry: JournalEntry) {
                         )
                     }
                 }
-                entry.notes?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+                entry.notes?.let {
+                    Text(it, style = MaterialTheme.typography.bodyMedium,
+                        maxLines = if (isExpanded) Int.MAX_VALUE else 3)
+                }
                 entry.weatherCondition?.let {
                     Text("Weather: $it${entry.temperatureCelsius?.let { t -> " · ${t.toInt()}°C" } ?: ""}",
                         style = MaterialTheme.typography.bodySmall,

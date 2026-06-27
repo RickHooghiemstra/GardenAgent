@@ -19,9 +19,13 @@ fun CreateGardenScreen(
     viewModel: CreateGardenViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(state.saved) {
-        if (state.saved) onBack()
+        if (state.saved) {
+            snackbarHostState.showSnackbar("Garden created")
+            onBack()
+        }
     }
 
     Scaffold(
@@ -30,7 +34,8 @@ fun CreateGardenScreen(
                 title = { Text("New Garden") },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") } }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         Column(
             modifier = Modifier

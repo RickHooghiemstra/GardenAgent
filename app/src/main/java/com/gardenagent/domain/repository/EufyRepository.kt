@@ -7,4 +7,5 @@ interface EufyRepository {
     suspend fun getDevices(): Result<List<EufyCamera>>
     suspend fun logout()
     suspend fun isLoggedIn(): Boolean
+    suspend fun getLoggedInEmail(): String?
 }

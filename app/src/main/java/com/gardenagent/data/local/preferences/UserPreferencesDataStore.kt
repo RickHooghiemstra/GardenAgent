@@ -22,15 +22,18 @@ class UserPreferencesDataStore @Inject constructor(
 ) {
     private val eufyTokenKey = stringPreferencesKey("eufy_token")
     private val eufyUserIdKey = stringPreferencesKey("eufy_user_id")
+    private val eufyEmailKey = stringPreferencesKey("eufy_email")
     private val openUdidKey = stringPreferencesKey("open_udid")
 
     val eufyToken: Flow<String?> = context.dataStore.data.map { it[eufyTokenKey] }
     val eufyUserId: Flow<String?> = context.dataStore.data.map { it[eufyUserIdKey] }
+    val eufyEmail: Flow<String?> = context.dataStore.data.map { it[eufyEmailKey] }
 
-    suspend fun saveEufyCredentials(token: String, userId: String) {
+    suspend fun saveEufyCredentials(token: String, userId: String, email: String = "") {
         context.dataStore.edit { prefs ->
             prefs[eufyTokenKey] = token
             prefs[eufyUserIdKey] = userId
+            prefs[eufyEmailKey] = email
         }
     }
 
@@ -38,6 +41,7 @@ class UserPreferencesDataStore @Inject constructor(
         context.dataStore.edit { prefs ->
             prefs.remove(eufyTokenKey)
             prefs.remove(eufyUserIdKey)
+            prefs.remove(eufyEmailKey)
         }
     }
 

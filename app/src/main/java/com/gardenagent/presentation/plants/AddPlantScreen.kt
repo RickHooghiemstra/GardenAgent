@@ -19,9 +19,13 @@ fun AddPlantScreen(
     viewModel: AddPlantViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(state.saved) {
-        if (state.saved) onBack()
+        if (state.saved) {
+            snackbarHostState.showSnackbar("Plant saved")
+            onBack()
+        }
     }
 
     Scaffold(
@@ -34,7 +38,8 @@ fun AddPlantScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         Column(
             modifier = Modifier

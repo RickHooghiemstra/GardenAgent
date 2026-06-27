@@ -20,8 +20,14 @@ fun AddJournalEntryScreen(
     viewModel: AddJournalEntryViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(state.saved) { if (state.saved) onBack() }
+    LaunchedEffect(state.saved) {
+        if (state.saved) {
+            snackbarHostState.showSnackbar("Journal entry saved")
+            onBack()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -29,7 +35,8 @@ fun AddJournalEntryScreen(
                 title = { Text("New Journal Entry") },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") } }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         Column(
             modifier = Modifier

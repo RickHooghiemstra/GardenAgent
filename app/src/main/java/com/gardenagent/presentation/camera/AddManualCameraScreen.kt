@@ -56,9 +56,13 @@ fun AddManualCameraScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedTemplate by remember { mutableStateOf<CameraTemplate?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(state.saved) {
-        if (state.saved) onBack()
+        if (state.saved) {
+            snackbarHostState.showSnackbar("Camera added")
+            onBack()
+        }
     }
 
     Scaffold(
@@ -67,7 +71,8 @@ fun AddManualCameraScreen(
                 title = { Text("Add Camera") },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") } }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         Column(
             modifier = Modifier

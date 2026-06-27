@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BluetoothSearching
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.gardenagent.domain.model.SensorDevice
 import com.gardenagent.domain.model.SensorReading
 import com.gardenagent.domain.provider.SensorScanResult
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -35,6 +37,7 @@ private enum class SensorBrand(val label: String, val protocol: String) {
 fun SensorScreen(viewModel: SensorViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showAddManualDialog by remember { mutableStateOf(false) }
+    var sensorToDelete by remember { mutableStateOf<SensorDevice?>(null) }
 
     val blePermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         listOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT)
@@ -50,6 +53,23 @@ fun SensorScreen(viewModel: SensorViewModel = hiltViewModel()) {
                 viewModel.registerManualDevice(name, location)
                 showAddManualDialog = false
             },
+        )
+    }
+
+    sensorToDelete?.let { device ->
+        AlertDialog(
+            onDismissRequest = { sensorToDelete = null },
+            title = { Text("Delete Sensor") },
+            text = { Text("Delete \"${device.deviceName}\"? This cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteDevice(device)
+                    sensorToDelete = null
+                }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { sensorToDelete = null }) { Text("Cancel") }
+            }
         )
     }
 
@@ -127,6 +147,14 @@ fun SensorScreen(viewModel: SensorViewModel = hiltViewModel()) {
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
+                if (!state.isScanning && state.discoveredDevices.isEmpty() && permissionState.allPermissionsGranted) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "No BLE sensors found. Make sure your sensor is nearby and tap Scan.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
                 state.error?.let {
                     Spacer(Modifier.height(8.dp))
                     Text("Error: $it", color = MaterialTheme.colorScheme.error)
@@ -158,6 +186,7 @@ fun SensorScreen(viewModel: SensorViewModel = hiltViewModel()) {
                         name = reg.deviceName,
                         location = reg.locationDescription,
                         reading = state.readings[reg.address],
+                        onDelete = { sensorToDelete = reg },
                     )
                 }
             }
@@ -338,6 +367,7 @@ private fun ManualSensorCard(
     name: String,
     location: String?,
     reading: SensorReading?,
+    onDelete: () -> Unit,
 ) {
     Card(
         Modifier.fillMaxWidth(),
@@ -345,7 +375,7 @@ private fun ManualSensorCard(
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Column {
+                Column(Modifier.weight(1f)) {
                     Text(name, style = MaterialTheme.typography.titleMedium)
                     location?.let {
                         AssistChip(
@@ -355,7 +385,13 @@ private fun ManualSensorCard(
                         )
                     }
                 }
-                AssistChip(onClick = {}, label = { Text("Manual") })
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    AssistChip(onClick = {}, label = { Text("Manual") })
+                    IconButton(onClick = onDelete) {
+                        Icon(Icons.Default.Delete, "Delete sensor",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
             }
             if (reading != null) {
                 HorizontalDivider()

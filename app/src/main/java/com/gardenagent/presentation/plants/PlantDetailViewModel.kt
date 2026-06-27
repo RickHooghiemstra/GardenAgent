@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.gardenagent.domain.model.JournalEntry
 import com.gardenagent.domain.model.Plant
 import com.gardenagent.domain.repository.PlantRepository
+import com.gardenagent.domain.usecase.journal.DeleteJournalEntryUseCase
 import com.gardenagent.domain.usecase.journal.GetJournalEntriesUseCase
+import com.gardenagent.domain.usecase.plant.DeletePlantUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -15,6 +17,8 @@ import javax.inject.Inject
 class PlantDetailViewModel @Inject constructor(
     private val plantRepository: PlantRepository,
     private val getJournalEntriesUseCase: GetJournalEntriesUseCase,
+    private val deleteJournalEntryUseCase: DeleteJournalEntryUseCase,
+    private val deletePlantUseCase: DeletePlantUseCase,
 ) : ViewModel() {
 
     private val _plant = MutableStateFlow<Plant?>(null)
@@ -29,5 +33,13 @@ class PlantDetailViewModel @Inject constructor(
             getJournalEntriesUseCase(plantId)
                 .collect { _entries.value = it }
         }
+    }
+
+    fun deleteJournalEntry(entry: JournalEntry) {
+        viewModelScope.launch { deleteJournalEntryUseCase(entry) }
+    }
+
+    fun deletePlant() {
+        viewModelScope.launch { _plant.value?.let { deletePlantUseCase(it) } }
     }
 }

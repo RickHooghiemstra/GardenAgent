@@ -27,7 +27,7 @@ class EufyRepositoryImpl @Inject constructor(
             error(hint)
         }
         val data = response.data ?: error("Login failed: Eufy returned no user data")
-        dataStore.saveEufyCredentials(data.accessToken, data.userId)
+        dataStore.saveEufyCredentials(data.accessToken, data.userId, email)
     }
 
     override suspend fun getDevices(): Result<List<EufyCamera>> = runCatching {
@@ -47,4 +47,6 @@ class EufyRepositoryImpl @Inject constructor(
     override suspend fun logout() { dataStore.clearEufyCredentials() }
 
     override suspend fun isLoggedIn(): Boolean = dataStore.eufyToken.first() != null
+
+    override suspend fun getLoggedInEmail(): String? = dataStore.eufyEmail.first()
 }

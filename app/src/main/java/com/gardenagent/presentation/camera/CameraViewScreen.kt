@@ -50,6 +50,8 @@ fun CameraViewScreen(
                         Text("Camera not reachable", style = MaterialTheme.typography.titleMedium)
                         Text("Make sure you are connected to your home WiFi network.",
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Spacer(Modifier.height(8.dp))
+                        Button(onClick = viewModel::retry) { Text("Retry") }
                     }
                 }
                 else -> {

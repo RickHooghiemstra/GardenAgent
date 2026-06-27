@@ -13,6 +13,7 @@ data class SettingsUiState(
     val email: String = "",
     val password: String = "",
     val isLoggedIn: Boolean = false,
+    val loggedInEmail: String? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
 )
@@ -27,7 +28,10 @@ class SettingsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoggedIn = eufyRepository.isLoggedIn())
+            _uiState.value = _uiState.value.copy(
+                isLoggedIn = eufyRepository.isLoggedIn(),
+                loggedInEmail = eufyRepository.getLoggedInEmail(),
+            )
         }
     }
 
@@ -43,7 +47,14 @@ class SettingsViewModel @Inject constructor(
         _uiState.value = state.copy(isLoading = true, error = null)
         viewModelScope.launch {
             eufyRepository.login(state.email.trim(), state.password)
-                .onSuccess { _uiState.value = _uiState.value.copy(isLoading = false, isLoggedIn = true, password = "") }
+                .onSuccess {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isLoggedIn = true,
+                        loggedInEmail = state.email.trim(),
+                        password = "",
+                    )
+                }
                 .onFailure { _uiState.value = _uiState.value.copy(isLoading = false, error = it.message) }
         }
     }
@@ -51,7 +62,7 @@ class SettingsViewModel @Inject constructor(
     fun logout() {
         viewModelScope.launch {
             eufyRepository.logout()
-            _uiState.value = _uiState.value.copy(isLoggedIn = false, email = "", password = "")
+            _uiState.value = _uiState.value.copy(isLoggedIn = false, loggedInEmail = null, email = "", password = "")
         }
     }
 }

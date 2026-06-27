@@ -101,6 +101,10 @@ class SensorViewModel @Inject constructor(
         }
     }
 
+    fun deleteDevice(device: SensorDevice) {
+        viewModelScope.launch { sensorDeviceRepository.deleteDevice(device) }
+    }
+
     fun registerManualDevice(name: String, location: String) {
         // Use a synthetic address so it appears in the registered list but has no BLE address
         val syntheticAddress = "manual:${System.currentTimeMillis()}"
