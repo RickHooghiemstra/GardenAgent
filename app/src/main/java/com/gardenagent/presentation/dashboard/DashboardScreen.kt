@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Park
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,6 +28,8 @@ fun DashboardScreen(
     onNavigateToAdvice: () -> Unit,
     onNavigateToWeather: () -> Unit,
     onNavigateToJournalEntry: () -> Unit,
+    onNavigateToSettings: () -> Unit = {},
+    onNavigateToGardens: () -> Unit = {},
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -36,8 +39,14 @@ fun DashboardScreen(
             TopAppBar(
                 title = { Text("Garden Agent") },
                 actions = {
+                    IconButton(onClick = onNavigateToGardens) {
+                        Icon(Icons.Default.Park, "Manage gardens")
+                    }
                     IconButton(onClick = viewModel::refreshAdvice) {
                         Icon(Icons.Default.AutoAwesome, "Refresh advice")
+                    }
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(Icons.Default.Settings, "Settings")
                     }
                 }
             )

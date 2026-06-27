@@ -22,6 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 fun SettingsScreen(
     onBack: () -> Unit,
     onNotificationSettings: () -> Unit = {},
+    onGardenList: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -85,6 +86,15 @@ fun SettingsScreen(
                     if (state.isLoading) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
                     else Text("Log in to Eufy")
                 }
+            }
+
+            HorizontalDivider(Modifier.padding(vertical = 8.dp))
+            Text("Gardens", style = MaterialTheme.typography.titleMedium)
+            OutlinedButton(
+                onClick = onGardenList,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Manage Gardens")
             }
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp))

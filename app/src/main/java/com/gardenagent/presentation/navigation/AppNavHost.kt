@@ -104,9 +104,11 @@ fun AppNavHost() {
         ) {
             composable(Screen.Dashboard.route) {
                 DashboardScreen(
-                    onNavigateToAdvice = { navController.navigate(Screen.Advice.route) },
+                    onNavigateToAdvice = { navController.navigate(Screen.Weather.route) },
                     onNavigateToWeather = { navController.navigate(Screen.Weather.route) },
-                    onNavigateToJournalEntry = { navController.navigate(Screen.AddJournalEntry.createRoute()) }
+                    onNavigateToJournalEntry = { navController.navigate(Screen.AddJournalEntry.createRoute()) },
+                    onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
+                    onNavigateToGardens = { navController.navigate(Screen.GardenList.route) },
                 )
             }
             composable(Screen.PlantList.route) {
@@ -172,6 +174,7 @@ fun AppNavHost() {
                 SettingsScreen(
                     onBack = { navController.popBackStack() },
                     onNotificationSettings = { navController.navigate(Screen.NotificationSettings.route) },
+                    onGardenList = { navController.navigate(Screen.GardenList.route) },
                 )
             }
             composable(Screen.GardenList.route) {
