@@ -2,6 +2,7 @@ package com.gardenagent.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.work.WorkManager
 import com.gardenagent.data.local.db.GardenDatabase
 import com.gardenagent.data.local.db.dao.GardenDao
 import com.gardenagent.data.local.db.dao.JournalEntryDao
@@ -37,4 +38,8 @@ object DatabaseModule {
     @Provides @Singleton fun provideManualCameraDao(db: GardenDatabase): ManualCameraDao = db.manualCameraDao()
     @Provides @Singleton fun provideSensorDeviceDao(db: GardenDatabase): SensorDeviceDao = db.sensorDeviceDao()
     @Provides @Singleton fun provideMaintenanceTaskDao(db: GardenDatabase): MaintenanceTaskDao = db.maintenanceTaskDao()
+
+    @Provides @Singleton
+    fun provideWorkManager(@ApplicationContext context: Context): WorkManager =
+        WorkManager.getInstance(context)
 }
